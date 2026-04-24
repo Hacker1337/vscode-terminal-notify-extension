@@ -2,7 +2,7 @@
   "name": "terminal-notify",
   "displayName": "Terminal Task Complete",
   "description": "Notifies you when a terminal command finishes — only when you're not watching.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "Hacker1337",
   "engines": {
     "vscode": "^1.90.0"
@@ -13,6 +13,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "icon": "icon.png",
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {

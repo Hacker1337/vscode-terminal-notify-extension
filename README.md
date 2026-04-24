@@ -62,13 +62,12 @@ vsce publish
 
 ## Planned / possible future features
 
+- **CI packaging** with GitHub Actions to automate publishing new versions upon merge to main.
+- **Add test suite** -- automatically verify core logic and prevent regressions.
 - **Per-terminal ignore** — right-click on a terminal → "Don't notify for this terminal".
 - **Status bar indicator** showing running commands and quick toggle.
-- **VS Code task & debug-session completion** notifications.
 - **Wildcard/glob support** in `excludeCommands` (currently prefix-only).
 - **Proper "is terminal panel visible?" detection** to fix the known limitation above.
-- **Quiet hours / Do Not Disturb schedule.**
-- **Smarter command-name labels** for more tooling (maven, gradle, pytest, etc.).
 
 ## License
 
