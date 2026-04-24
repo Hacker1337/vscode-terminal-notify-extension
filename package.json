@@ -1,0 +1,103 @@
+{
+  "name": "terminal-notify",
+  "displayName": "Terminal Task Complete",
+  "description": "Notifies you when a terminal command finishes — only when you're not watching.",
+  "version": "0.1.0",
+  "publisher": "amir",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Terminal Task Complete",
+      "properties": {
+        "terminalNotify.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable notifications."
+        },
+        "terminalNotify.durationThresholdSeconds": {
+          "type": "number",
+          "default": 10,
+          "description": "Minimum command duration (in seconds) to trigger a notification when the terminal is focused."
+        },
+        "terminalNotify.alwaysNotifyWhenUnfocused": {
+          "type": "boolean",
+          "default": true,
+          "description": "Always notify when VS Code window is not focused, regardless of command duration."
+        },
+        "terminalNotify.alwaysNotifyWhenTerminalHidden": {
+          "type": "boolean",
+          "default": true,
+          "description": "Always notify when the completed terminal is not the active one."
+        },
+        "terminalNotify.showDesktopNotification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show native desktop notification in addition to VS Code popup."
+        },
+        "terminalNotify.showPopup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code popup notification."
+        },
+        "terminalNotify.notifyOn": {
+          "type": "string",
+          "enum": [
+            "success",
+            "error",
+            "both"
+          ],
+          "default": "both",
+          "description": "When to notify: on success, error, or both."
+        },
+        "terminalNotify.includeDuration": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include command duration in the notification message."
+        },
+        "terminalNotify.includeCommandPreview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include a preview of the command in the notification."
+        },
+        "terminalNotify.excludeCommands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "List of command prefixes to exclude from notifications (e.g. [\"cd\", \"ls\", \"echo\"])."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "terminalNotify.toggle",
+        "title": "Terminal Notify: Toggle Notifications"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/node-notifier": "^8.0.5",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "node-notifier": "^10.0.1"
+  }
+}
