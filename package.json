@@ -3,7 +3,7 @@
   "displayName": "Terminal Task Complete",
   "description": "Notifies you when a terminal command finishes — only when you're not watching.",
   "version": "0.1.0",
-  "publisher": "amir",
+  "publisher": "Hacker1337",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -106,6 +106,11 @@
     "@types/node-notifier": "^8.0.5",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.4.0"
+  },
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hacker1337/vscode-terminal-notify-extension"
   },
   "dependencies": {
     "node-notifier": "^10.0.1"

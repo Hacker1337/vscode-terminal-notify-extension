@@ -43,6 +43,15 @@ npx tsc -p .
 # then press F5 in VS Code to launch the Extension Development Host
 ```
 
+### Publishing new versions
+
+```bash
+npm install -g @vscode/vsce
+
+vsce package
+vsce publish
+```
+
 ## Known limitations
 
 - **Closed terminal panel isn't detected.** If you close the entire terminal tab/panel, VS Code still reports the terminal as the "active terminal", so the extension thinks you're watching it. It will only fall back to notifying when the command exceeds the duration threshold. A future version should check whether the terminal panel is actually visible.
@@ -63,4 +72,4 @@ npx tsc -p .
 
 ## License
 
-MIT
+GNU General Public License v3.0 or later. See [LICENSE.txt](LICENSE.txt) for details.
