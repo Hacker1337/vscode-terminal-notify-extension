@@ -9,20 +9,13 @@ interface RunningCommand {
   terminalWasActive: boolean;
 }
 
-const runningCommands = new Map<string, RunningCommand>();
+const runningCommands = new Map<vscode.TerminalShellExecution, RunningCommand>();
 
 // Track whether the VS Code window is focused
 let windowFocused = true;
 
-// Track whether the user was focused on a different terminal or editor while command ran
-let activeTerminalName: string | undefined;
-
 function getConfig() {
   return vscode.workspace.getConfiguration("terminalNotify");
-}
-
-function makeKey(terminal: vscode.Terminal, commandLine: string): string {
-  return `${terminal.name}::${commandLine}`;
 }
 
 function formatDuration(ms: number): string {
@@ -127,32 +120,77 @@ function sendNotification(info: RunningCommand, exitCode: number | undefined) {
 
   // VS Code popup
   if (config.get<boolean>("showPopup", true)) {
-    const fullMessage = detail ? `${message}\n${detail}` : message;
-    const showFn = isError
-      ? vscode.window.showWarningMessage
-      : vscode.window.showInformationMessage;
+    const fullMessage = detail ? `${message} — ${detail}` : message;
+    const autoDismissSec = config.get<number>("popupAutoDismissSeconds", 0);
 
-    showFn(fullMessage, "Show Terminal").then((action) => {
-      if (action === "Show Terminal") {
-        info.terminal.show();
-      }
-    });
+    if (autoDismissSec > 0) {
+      // Use withProgress so the notification can be auto-dismissed by resolving the promise
+      vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: fullMessage,
+          cancellable: true,
+        },
+        (_progress, cancelToken) =>
+          new Promise<void>((resolve) => {
+            const timer = setTimeout(resolve, autoDismissSec * 1000);
+            cancelToken.onCancellationRequested(() => {
+              clearTimeout(timer);
+              info.terminal.show();
+              resolve();
+            });
+          })
+      );
+    } else {
+      const showFn = isError
+        ? vscode.window.showWarningMessage
+        : vscode.window.showInformationMessage;
+
+      showFn(fullMessage, "Show Terminal").then((action) => {
+        if (action === "Show Terminal") {
+          info.terminal.show();
+        }
+      });
+    }
   }
 
   // Desktop notification
   if (config.get<boolean>("showDesktopNotification", true)) {
+    const soundEnabled = config.get<boolean>("playSound", false);
     notifier.notify(
       {
         title: isError ? "Command Failed" : "Command Completed",
         message: detail ? `${message}\n${detail}` : message,
         timeout: 5,
         wait: true,
-      },
+        sound: soundEnabled,
+      } as notifier.Notification,
       () => {
         // Click callback — focus VS Code and the terminal
         info.terminal.show();
       }
     );
+  }
+
+  // Fallback / additional sound via system beep if node-notifier sound isn't honored on this platform
+  if (config.get<boolean>("playSound", false) && !config.get<boolean>("showDesktopNotification", true)) {
+    playFallbackSound();
+  }
+}
+
+function playFallbackSound() {
+  // Attempt a cross-platform beep. Falls back silently on failure.
+  try {
+    const { exec } = require("child_process");
+    if (process.platform === "linux") {
+      exec("paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null || (command -v aplay >/dev/null && aplay -q /usr/share/sounds/alsa/Front_Center.wav) 2>/dev/null || printf '\\a'");
+    } else if (process.platform === "darwin") {
+      exec("afplay /System/Library/Sounds/Glass.aiff");
+    } else if (process.platform === "win32") {
+      exec('powershell -c "[console]::beep(800,200)"');
+    }
+  } catch {
+    // ignore
   }
 }
 
@@ -164,22 +202,13 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Track active terminal
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTerminal((terminal) => {
-      activeTerminalName = terminal?.name;
-    })
-  );
-
   // Record when a command starts
   context.subscriptions.push(
     vscode.window.onDidStartTerminalShellExecution((e) => {
-      const commandLine =
-        e.execution.commandLine?.value ?? "";
+      const commandLine = e.execution.commandLine?.value ?? "";
       if (!commandLine) {return;}
 
-      const key = makeKey(e.terminal, commandLine);
-      runningCommands.set(key, {
+      runningCommands.set(e.execution, {
         commandLine,
         startTime: Date.now(),
         terminal: e.terminal,
@@ -192,13 +221,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Handle command completion
   context.subscriptions.push(
     vscode.window.onDidEndTerminalShellExecution((e) => {
-      const commandLine =
-        e.execution.commandLine?.value ?? "";
-      if (!commandLine) {return;}
-
-      const key = makeKey(e.terminal, commandLine);
-      const info = runningCommands.get(key);
-      runningCommands.delete(key);
+      const info = runningCommands.get(e.execution);
+      runningCommands.delete(e.execution);
 
       if (!info) {return;}
 

@@ -25,7 +25,7 @@
         },
         "terminalNotify.durationThresholdSeconds": {
           "type": "number",
-          "default": 10,
+          "default": 20,
           "description": "Minimum command duration (in seconds) to trigger a notification when the terminal is focused."
         },
         "terminalNotify.alwaysNotifyWhenUnfocused": {
@@ -47,6 +47,16 @@
           "type": "boolean",
           "default": true,
           "description": "Show VS Code popup notification."
+        },
+        "terminalNotify.popupAutoDismissSeconds": {
+          "type": "number",
+          "default": 0,
+          "description": "Auto-dismiss the VS Code popup after this many seconds. 0 disables auto-dismiss (popup stays until clicked)."
+        },
+        "terminalNotify.playSound": {
+          "type": "boolean",
+          "default": false,
+          "description": "Play a sound when the notification fires."
         },
         "terminalNotify.notifyOn": {
           "type": "string",
