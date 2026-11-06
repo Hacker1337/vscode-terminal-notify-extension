@@ -35,6 +35,41 @@ If none apply (you're actively staring at the terminal, and the command was quic
 
 - **Terminal Notify: Toggle Notifications** — quickly enable/disable from the command palette.
 
+## Troubleshooting version 0.1.1
+
+If no notifications appear, open **View: Output** from the command palette and select **Log (Extension Host)**. The affected 0.1.1 package fails to activate with:
+
+```text
+Activating extension Hacker1337.terminal-notify failed
+Error: Cannot find module 'node-notifier'
+```
+
+The package excludes the runtime dependency `node-notifier`. This prevents the entire extension from loading, including VS Code popups, even if desktop notifications are disabled.
+
+### Temporary Windows workaround
+
+Until a corrected package is published, you can install the missing production dependencies into the installed extension directory. This requires Node.js/npm and the `code` command on your PATH.
+
+Run this in PowerShell:
+
+```powershell
+$extensionPath = code --locate-extension Hacker1337.terminal-notify
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($extensionPath)) {
+    throw "VS Code could not locate the installed Terminal Task Complete extension."
+}
+npm install --prefix "$extensionPath" --omit=dev --ignore-scripts --package-lock=false
+```
+
+The explicit `--prefix` targets the extension regardless of your current directory. After npm succeeds, run **Developer: Reload Window**, create a new integrated PowerShell terminal, and run:
+
+```powershell
+Start-Sleep -Seconds 25
+```
+
+With the default settings and shell integration enabled, this exceeds the 20-second notification threshold.
+
+This is a repair for the affected package, not a normal installation requirement. Reinstalling or updating the extension can replace the repaired directory; prefer a corrected release when available.
+
 ## Development
 
 ```bash
